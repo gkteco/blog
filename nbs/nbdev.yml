@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "blog"
+  site-url: "https://gkteco.github.io/blog"
+  description: "A blog for Gianni Crivello"
+  repo-branch: main
+  repo-url: "https://github.com/gkteco/blog"

@@ -1,0 +1,7 @@
+website:
+  sidebar:
+    contents:
+      - index.ipynb
+      - 00_DataBlock Walkthrough.ipynb
+      - 01_Fast Core.ipynb
+      - 02_Learners.ipynb
