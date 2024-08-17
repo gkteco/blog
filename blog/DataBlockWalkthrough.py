@@ -3,6 +3,9 @@
 # %% auto 0
 __all__ = []
 
+# %% ../nbs/00_DataBlock Walkthrough.ipynb 2
+from nbdev.showdoc import *
+
 # %% ../nbs/00_DataBlock Walkthrough.ipynb 5
 from fastai.data.all import *
 from fastai.vision.all import *

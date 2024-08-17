@@ -5,3 +5,4 @@ website:
       - 00_DataBlock Walkthrough.ipynb
       - 01_Fast Core.ipynb
       - 02_Learners.ipynb
+      - 03_Lazy Evaluation Framework.ipynb

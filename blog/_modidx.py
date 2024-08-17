@@ -5,4 +5,41 @@ d = { 'settings': { 'branch': 'main',
                 'doc_host': 'https://gkteco.github.io',
                 'git_url': 'https://github.com/gkteco/blog',
                 'lib_path': 'blog'},
-  'syms': {'blog.DataBlockWalkthrough': {}}}
+  'syms': { 'blog.DataBlockWalkthrough': {},
+            'blog.LazyEvaluationFramework': { 'blog.LazyEvaluationFramework.AnthropicVertex.lazy': ( 'lazy evaluation '
+                                                                                                     'framework.html#anthropicvertex.lazy',
+                                                                                                     'blog/LazyEvaluationFramework.py'),
+                                              'blog.LazyEvaluationFramework.LLM': ( 'lazy evaluation framework.html#llm',
+                                                                                    'blog/LazyEvaluationFramework.py'),
+                                              'blog.LazyEvaluationFramework.LazyEvaluationClient': ( 'lazy evaluation '
+                                                                                                     'framework.html#lazyevaluationclient',
+                                                                                                     'blog/LazyEvaluationFramework.py'),
+                                              'blog.LazyEvaluationFramework.LazyEvaluationClient.__init__': ( 'lazy evaluation '
+                                                                                                              'framework.html#lazyevaluationclient.__init__',
+                                                                                                              'blog/LazyEvaluationFramework.py'),
+                                              'blog.LazyEvaluationFramework.LazyEvaluationClient.ask_question': ( 'lazy evaluation '
+                                                                                                                  'framework.html#lazyevaluationclient.ask_question',
+                                                                                                                  'blog/LazyEvaluationFramework.py'),
+                                              'blog.LazyEvaluationFramework.LazyEvaluationClient.get_current_step': ( 'lazy evaluation '
+                                                                                                                      'framework.html#lazyevaluationclient.get_current_step',
+                                                                                                                      'blog/LazyEvaluationFramework.py'),
+                                              'blog.LazyEvaluationFramework.LazyEvaluationClient.get_next_step': ( 'lazy evaluation '
+                                                                                                                   'framework.html#lazyevaluationclient.get_next_step',
+                                                                                                                   'blog/LazyEvaluationFramework.py'),
+                                              'blog.LazyEvaluationFramework.LazyEvaluationClient.initalize_problem': ( 'lazy evaluation '
+                                                                                                                       'framework.html#lazyevaluationclient.initalize_problem',
+                                                                                                                       'blog/LazyEvaluationFramework.py'),
+                                              'blog.LazyEvaluationFramework.LazyState': ( 'lazy evaluation framework.html#lazystate',
+                                                                                          'blog/LazyEvaluationFramework.py'),
+                                              'blog.LazyEvaluationFramework.LazyState.__post_init__': ( 'lazy evaluation '
+                                                                                                        'framework.html#lazystate.__post_init__',
+                                                                                                        'blog/LazyEvaluationFramework.py'),
+                                              'blog.LazyEvaluationFramework.LazyState.add_step': ( 'lazy evaluation '
+                                                                                                   'framework.html#lazystate.add_step',
+                                                                                                   'blog/LazyEvaluationFramework.py'),
+                                              'blog.LazyEvaluationFramework.LazyState.get_context': ( 'lazy evaluation '
+                                                                                                      'framework.html#lazystate.get_context',
+                                                                                                      'blog/LazyEvaluationFramework.py'),
+                                              'blog.LazyEvaluationFramework.LazyState.refresh': ( 'lazy evaluation '
+                                                                                                  'framework.html#lazystate.refresh',
+                                                                                                  'blog/LazyEvaluationFramework.py')}}}
