@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>A Framework for Lazy Evaluation of Language Models – blog</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="A Framework for Lazy Evaluation of Language Models – blog">
+<meta property="og:description" content="A blog for Gianni Crivello">
+<meta property="og:site_name" content="blog">
+<meta name="twitter:title" content="A Framework for Lazy Evaluation of Language Models – blog">
+<meta name="twitter:description" content="A blog for Gianni Crivello">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">blog</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./lazy evaluation framework.html">A Framework for Lazy Evaluation of Language Models</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gianni Crivello’s Blog</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./datablock walkthrough.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DataBlock Walkthrough</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./lazy evaluation framework.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">A Framework for Lazy Evaluation of Language Models</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link active" data-scroll-target="#motivation">Motivation</a></li>
+  <li><a href="#a-note-on-lazy-evaluation" id="toc-a-note-on-lazy-evaluation" class="nav-link" data-scroll-target="#a-note-on-lazy-evaluation">A note on lazy evaluation</a>
+  <ul class="collapse">
+  <li><a href="#lazystate" id="toc-lazystate" class="nav-link" data-scroll-target="#lazystate">LazyState</a></li>
+  <li><a href="#llm" id="toc-llm" class="nav-link" data-scroll-target="#llm">LLM</a></li>
+  <li><a href="#lazyevaluationclient" id="toc-lazyevaluationclient" class="nav-link" data-scroll-target="#lazyevaluationclient">LazyEvaluationClient</a></li>
+  <li><a href="#lazyevaluationclient.ask_question" id="toc-lazyevaluationclient.ask_question" class="nav-link" data-scroll-target="#lazyevaluationclient.ask_question">LazyEvaluationClient.ask_question</a></li>
+  </ul></li>
+  <li><a href="#the-lazy-evaluation-flow" id="toc-the-lazy-evaluation-flow" class="nav-link" data-scroll-target="#the-lazy-evaluation-flow">The Lazy Evaluation Flow</a>
+  <ul class="collapse">
+  <li><a href="#anthropicvertex.lazy" id="toc-anthropicvertex.lazy" class="nav-link" data-scroll-target="#anthropicvertex.lazy">AnthropicVertex.lazy</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/gkteco/blog/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">A Framework for Lazy Evaluation of Language Models</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="motivation" class="level2">
+<h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
+<p>The motivation behind implementing lazy evaluation in language models stems from several key observations:</p>
+<ul>
+<li><p><em>Pedagogical Effectiveness:</em> Traditional tutoring methods often involve guiding students through problems step-by-step, allowing them to think critically and make connections on their own. AI tutors should aim to replicate this approach rather than simply providing answers.</p></li>
+<li><p><em>Resource Efficiency:</em> Generating complete solutions upfront is computationally expensive, especially for complex problems. A lazy evaluation approach can significantly reduce resource usage by generating only the necessary information on demand.</p></li>
+<li><p><em>Adaptability:</em> Students have varying levels of understanding and may require different amounts of guidance. A lazy evaluation system can essentially adapt to each student’s needs, providing more or less detail as required.</p></li>
+<li><p><em>Engagement:</em> By revealing information gradually, we can maintain student engagement and encourage active participation in the problem-solving process.</p></li>
+<li><p><em>Real-world Problem Solving:</em> In many real-world scenarios, solutions are not immediately apparent and must be approached incrementally. Training students to think in this way prepares them for challenges beyond the classroom.</p></li>
+</ul>
+</section>
+<section id="a-note-on-lazy-evaluation" class="level2">
+<h2 class="anchored" data-anchor-id="a-note-on-lazy-evaluation">A note on lazy evaluation</h2>
+<p>The concept of lazy evaluation is well-established in programming languages, where it refers to the practice of delaying the evaluation of an expression until its value is actually needed. By applying this principle to language models in an educational context, we can create AI tutors that guide students through problems more naturally and effectively.</p>
+<p>We first start by creating a <code>Lazy State</code> class, which will be used to keep track of the problem, steps, and the current step</p>
+<hr>
+<p><a href="https://github.com/gkteco/blog/blob/main/blog/LazyEvaluationFramework.py#L30" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="lazystate" class="level3">
+<h3 class="anchored" data-anchor-id="lazystate">LazyState</h3>
+<blockquote class="blockquote">
+<pre><code> LazyState (problem:str, steps:List[str]=&lt;factory&gt;, current_step:int=0)</code></pre>
+</blockquote>
+<div id="cell-6" class="cell" data-execution_count="126">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>state <span class="op">=</span> LazyState(problem<span class="op">=</span><span class="st">"What is the result of f(x) = 3x + 2 when x = 5?"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>state.add_step(<span class="st">"First, we need substitute x in the function with 5"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>state</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="126">
+<pre><code>LazyState(problem='What is the result of f(x) = 3x + 2 when x = 5?', steps=['What is the result of f(x) = 3x + 2 when x = 5?', 'First, we need substitute x in the function with 5'], current_step=1)</code></pre>
+</div>
+</div>
+<div id="cell-7" class="cell" data-execution_count="102">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>state.get_context()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="102">
+<pre><code>"Problem: What is the result of f(x) = 3x + 2 when x = 5? \n Steps so far: ['What is the result of f(x) = 3x + 2 when x = 5?', 'First, we need substitute x in the function with 5']"</code></pre>
+</div>
+</div>
+<p>With this simple state manager, we have a way to track each step of the problem-solving process and get the current context to be used for a call to a language model.</p>
+<p>Now, let’s set up a class <a href="https://gkteco.github.io/blog/lazy%20evaluation%20framework.html#lazyevaluationclient"><code>LazyEvaluationClient</code></a> that will do the heavy lifting of managing the state and calling the language model.</p>
+<hr>
+<p><a href="https://github.com/gkteco/blog/blob/main/blog/LazyEvaluationFramework.py#L51" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="llm" class="level3">
+<h3 class="anchored" data-anchor-id="llm">LLM</h3>
+<blockquote class="blockquote">
+<pre><code> LLM (client:anthropic.lib.vertex._client.AnthropicVertex, model:str)</code></pre>
+</blockquote>
+<hr>
+<p><a href="https://github.com/gkteco/blog/blob/main/blog/LazyEvaluationFramework.py#L68" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="lazyevaluationclient" class="level3">
+<h3 class="anchored" data-anchor-id="lazyevaluationclient">LazyEvaluationClient</h3>
+<blockquote class="blockquote">
+<pre><code> LazyEvaluationClient (llm:__main__.LLM, max_tokens:int=100,
+                       state:Optional[__main__.LazyState]=None)</code></pre>
+</blockquote>
+<p><em>The Lazy Evaluation Client</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>llm</td>
+<td>LLM</td>
+<td></td>
+<td>the language model to use, see <a href="https://gkteco.github.io/blog/lazy%20evaluation%20framework.html#llm"><code>LLM</code></a> class</td>
+</tr>
+<tr class="even">
+<td>max_tokens</td>
+<td>int</td>
+<td>100</td>
+<td>the maximum number of tokens to generate</td>
+</tr>
+<tr class="odd">
+<td>state</td>
+<td>Optional</td>
+<td>None</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Now that we have this basic machinery in place, let’s see the system in action with our previous problem</p>
+<p>As a recap, here is our problem:</p>
+<div id="cell-13" class="cell" data-execution_count="143">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> step <span class="kw">in</span> state.steps:</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(step)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>What is the result of f(x) = 3x + 2 when x = 5?
+The next step in solving this problem is to substitute the given value of x into the function f(x). Let's do that:
+
+Step: Substitute x = 5 into the function f(x) = 3x + 2
+
+f(5) = 3(5) + 2
+
+This step replaces all instances of x in the function with the given value of 5. This sets us up to perform the calculations in the next step.
+The next step in solving this problem is to perform the multiplication inside the parentheses:
+
+Step: Calculate 3(5)
+
+f(5) = 3(5) + 2
+f(5) = 15 + 2
+
+In this step, we multiply 3 by 5, which gives us 15. This simplifies our equation, leaving us with a simple addition to complete in the next step.
+The next step in solving this problem is to perform the final addition:
+
+Step: Calculate 15 + 2
+
+f(5) = 15 + 2
+f(5) = 17
+
+In this step, we add 15 and 2, which gives us the final result of 17. This completes the calculation of f(5).
+The next step in this problem-solving process is to state the final answer:
+
+Step: State the final result
+
+The result of f(x) = 3x + 2 when x = 5 is 17.
+
+This step concludes the problem by clearly stating the final answer we calculated in the previous steps.
+PROBLEM DONE</code></pre>
+</div>
+</div>
+<p>Now, let’s set up our client</p>
+<div id="cell-15" class="cell" data-execution_count="144">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> AnthropicVertex(project_id<span class="op">=</span>project_id, region<span class="op">=</span>location)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>llm <span class="op">=</span> LLM(client<span class="op">=</span>client, model<span class="op">=</span>model)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>lazy_lm <span class="op">=</span> LazyEvaluationClient(llm<span class="op">=</span>llm, state<span class="op">=</span>state)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can see what the current step our model is on:</p>
+<div id="cell-17" class="cell" data-execution_count="145">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>lazy_lm.get_current_step()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="145">
+<pre><code>'PROBLEM DONE'</code></pre>
+</div>
+</div>
+<p>Now, let’s have our model generate the next step</p>
+<div id="cell-19" class="cell" data-execution_count="146">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>lazy_lm.get_next_step()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="146">
+<pre><code>'PROBLEM DONE'</code></pre>
+</div>
+</div>
+<p>Finally, let’s continue calling the model until we reach the end of our problem</p>
+<div id="cell-21" class="cell" data-execution_count="108">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    next_step <span class="op">=</span> lazy_lm.get_next_step()</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> next_step <span class="op">==</span> <span class="st">"PROBLEM DONE"</span>:</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"Problem solved!"</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(next_step)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>The next step in solving this problem would be to evaluate the expression after substitution. So, the next step is:
+
+Evaluate f(5) = 3(5) + 2:
+f(5) = 15 + 2
+The next step in solving this problem would be to perform the final calculation. So, the next step is:
+
+Calculate the final result:
+f(5) = 15 + 2 = 17
+The next step in this problem-solving process would be to state the final answer. So, the next step is:
+
+Therefore, the result of f(x) = 3x + 2 when x = 5 is 17.
+Problem solved!</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/gkteco/blog/blob/main/blog/LazyEvaluationFramework.py#L114" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="lazyevaluationclient.ask_question" class="level3">
+<h3 class="anchored" data-anchor-id="lazyevaluationclient.ask_question">LazyEvaluationClient.ask_question</h3>
+<blockquote class="blockquote">
+<pre><code> LazyEvaluationClient.ask_question (question:str)</code></pre>
+</blockquote>
+<p>*Allows the user to ask a question about the current step without affecting the model’s ability to generate the next step.</p>
+<p>Args: question (str): The question the user wants to ask about the current step.</p>
+<p>Returns: str: The model’s response to the question.*</p>
+<p>We now have a way to take the current reasoning step and query it without having the model advance to the next step in the problem-solving process.</p>
+<div id="cell-24" class="cell" data-execution_count="160">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>state.refresh()</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>state</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="160">
+<pre><code>LazyState(problem='What is the result of f(x) = 3x + 2 when x = 5?', steps=['What is the result of f(x) = 3x + 2 when x = 5?'], current_step=0)</code></pre>
+</div>
+</div>
+<div id="cell-25" class="cell" data-execution_count="161">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>lazy_lm <span class="op">=</span> LazyEvaluationClient(llm<span class="op">=</span>llm, state<span class="op">=</span>state)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>lazy_lm.get_current_step()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="161">
+<pre><code>'What is the result of f(x) = 3x + 2 when x = 5?'</code></pre>
+</div>
+</div>
+<div id="cell-26" class="cell" data-execution_count="162">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>lazy_lm.get_next_step()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="162">
+<pre><code>'The next step in solving this problem is to substitute the given value of x into the function.\n\nStep: Substitute x = 5 into the function f(x) = 3x + 2'</code></pre>
+</div>
+</div>
+<div id="cell-27" class="cell" data-execution_count="163">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>lazy_lm.ask_question(<span class="st">"what is substitution?"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="163">
+<pre><code>"Substitution is a mathematical technique where we replace a variable in an equation or expression with a specific value or another expression. It's a fundamental concept in algebra and is used to solve equations, evaluate functions, and simplify expressions.\n\nIn the context of functions, substitution involves replacing the variable (usually x) with a given value to calculate the function's output for that specific input.\n\nFor example (not related to the current problem):\nIf we have a function g(x)"</code></pre>
+</div>
+</div>
+<div id="cell-28" class="cell" data-execution_count="164">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>lazy_lm.ask_question(<span class="st">"give me an example"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="164">
+<pre><code>"Certainly! I'll provide an example of substitution that's not related to the current problem.\n\nLet's consider a different function: h(x) = x² - 4x + 7\n\nIf we want to find the value of h(3), we would substitute x with 3:\n\nh(3) = 3² - 4(3) + 7\n\nNow we can calculate:\nh(3) = 9 - 12"</code></pre>
+</div>
+</div>
+<div id="cell-29" class="cell" data-execution_count="165">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>lazy_lm.get_next_step()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="165">
+<pre><code>'The next step is to perform the calculation using the substituted value:\n\nStep: Calculate f(5) = 3(5) + 2'</code></pre>
+</div>
+</div>
+<p>Now let’s put this all together in a simple loop:</p>
+<div id="cell-31" class="cell" data-execution_count="157">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    user_input <span class="op">=</span> <span class="bu">input</span>(<span class="st">"Enter a question or command: "</span>)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> user_input <span class="kw">in</span> [<span class="st">"next"</span>, <span class="st">"n"</span>]:</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"-------------------------------------------------"</span>)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"User asked for next step"</span>)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>        next_step <span class="op">=</span> lazy_lm.get_next_step()</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> next_step <span class="op">==</span> <span class="st">"PROBLEM DONE"</span>:</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">"Problem solved!"</span>)</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"-------------------------------------------------"</span>)</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Next step: </span><span class="sc">{</span>next_step<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> user_input <span class="kw">in</span> [<span class="st">"question"</span>, <span class="st">"q"</span>]:</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>        user_question <span class="op">=</span> <span class="bu">input</span>(<span class="st">"Enter your question: "</span>)</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>        r <span class="op">=</span> lazy_lm.ask_question(user_question)</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"-------------------------------------------------"</span>)</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"User Question: </span><span class="sc">{</span>user_question<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"-------------------------------------------------"</span>)</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Model Answer: </span><span class="sc">{</span>r<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>-------------------------------------------------
+User asked for next step
+-------------------------------------------------
+Next step: The next step in solving this problem is to substitute the given value of x into the function. Here's the step:
+
+Substitute x = 5 into the function f(x) = 3x + 2
+
+This step sets up the equation for us to solve in the following steps.
+-------------------------------------------------
+User asked for next step
+-------------------------------------------------
+Next step: The next step in solving this problem is to perform the substitution and write out the resulting equation. Here's the step:
+
+Replace x with 5 in the equation:
+f(5) = 3(5) + 2
+
+This step shows us the function with the specific value of x we're working with, preparing us for the final calculations.
+-------------------------------------------------
+User Question: what is substitution?
+-------------------------------------------------
+Model Answer: Substitution is a mathematical technique where you replace a variable in an equation or expression with a specific value or another expression. It's a fundamental concept in algebra and is used to solve equations, simplify expressions, or evaluate functions.
+
+In the context of functions, substitution involves replacing the variable (often x) with a given value to determine the function's output for that specific input.
+
+For example (not related to the current problem):
+If we have a function g(x)
+-------------------------------------------------
+User Question: can you provide an example?
+-------------------------------------------------
+Model Answer: Certainly! I'd be happy to provide an example of substituting a value into a function without using the current problem. Here's a different example:
+
+Let's say we have a function g(y) = 2y² - 4y + 1, and we want to find the value when y = 3.
+
+The step of substituting the value would look like this:
+
+g(3) = 2(3)² - 4(3)
+-------------------------------------------------
+User Question: can you finish the example?
+-------------------------------------------------
+Model Answer: Certainly! I'd be happy to provide an example of performing a substitution and writing out the resulting equation, but using a different function than the one in the current context.
+
+Let's consider a different function: g(x) = 2x² - 4x + 1
+
+If we want to find g(3), we would substitute x = 3 into the function. Here's how that step would look:
+
+Replace x with 3 in the equation
+-------------------------------------------------
+User asked for next step
+-------------------------------------------------
+Next step: The next step in solving this problem is to perform the multiplication inside the parentheses. Here's the step:
+
+Calculate 3(5):
+f(5) = 3(5) + 2
+f(5) = 15 + 2
+
+This step simplifies the expression by carrying out the multiplication, bringing us closer to the final result.
+-------------------------------------------------
+User Question: what is the 3(15) syntax mean?
+-------------------------------------------------
+Model Answer: The syntax 3(15) in the current context is actually incorrect. I apologize for the confusion. Let me clarify:
+
+In the current step, we have:
+f(5) = 3(5) + 2
+f(5) = 15 + 2
+
+Here, 3(5) means 3 multiplied by 5. The parentheses are used to indicate multiplication. It's equivalent to writing 3 ×
+-------------------------------------------------
+User asked for next step
+-------------------------------------------------
+Next step: The next step in solving this problem is to perform the final addition. Here's the step:
+
+Calculate 15 + 2:
+f(5) = 15 + 2
+f(5) = 17
+
+This step completes the calculation, giving us the final result of the function when x = 5.
+-------------------------------------------------
+User asked for next step
+-------------------------------------------------
+Next step: The next step in this problem-solving process is to state the final answer clearly. Here's the step:
+
+Therefore, the result of f(x) = 3x + 2 when x = 5 is 17.
+
+This step concludes the problem by explicitly stating the answer to the original question.
+-------------------------------------------------
+User asked for next step
+Problem solved!</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="the-lazy-evaluation-flow" class="level2">
+<h2 class="anchored" data-anchor-id="the-lazy-evaluation-flow">The Lazy Evaluation Flow</h2>
+<p>This simple framework effectivly shows how we can wrape a language model capable of step-by-step reasoning to create a lazy evaluator.</p>
+<p>This approach follows these system design steps:</p>
+<ul>
+<li><p>Problem Initialization: A state manager is initalized with a problem</p></li>
+<li><p>Prompting Strategy: Prompt the language model to generate the next step given the context in the state manager.</p></li>
+<li><p>State Update: State Manager records the newly generated step and updates.</p></li>
+<li><p>User Interaction: User interaction is held within a different state manager <code>question_history</code> which does not affect the overall state of the current problem.</p></li>
+<li><p>Adaptive Response: Based on the current input, the Lazy Evaluator decides to either 1) Generate the next step or 2) Provide a response to the user’s question given the current state of the problem and the question history.</p></li>
+</ul>
+<p>To tie everything together, let’s now add a <code>patch</code> to the <code>AnthropicVertex</code> client to allow users of the framework to have a single entry point into what we can call “lazy mode”.</p>
+<hr>
+<p><a href="https://github.com/gkteco/blog/blob/main/blog/LazyEvaluationFramework.py#L159" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="anthropicvertex.lazy" class="level3">
+<h3 class="anchored" data-anchor-id="anthropicvertex.lazy">AnthropicVertex.lazy</h3>
+<blockquote class="blockquote">
+<pre><code> AnthropicVertex.lazy (problem:str)</code></pre>
+</blockquote>
+<p><em>Initialize a lazy evaluation client with a problem</em></p>
+<div id="cell-35" class="cell" data-execution_count="172">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> AnthropicVertex(project_id<span class="op">=</span>project_id, region<span class="op">=</span>location)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>lazy_lm <span class="op">=</span> client.lazy(<span class="st">"What is the result of f(x) = 3x + 2 when x = 5?"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-36" class="cell" data-execution_count="173">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>lazy_lm.get_current_step()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="173">
+<pre><code>'What is the result of f(x) = 3x + 2 when x = 5?'</code></pre>
+</div>
+</div>
+<div id="cell-37" class="cell" data-execution_count="174">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>lazy_lm.get_next_step()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="174">
+<pre><code>"To solve this problem, we need to substitute x with 5 in the given function. Let's do that in the next step:\n\nReplace x with 5 in the function f(x) = 3x + 2\n\nThis step sets up the equation for us to solve in the following steps."</code></pre>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/gkteco\.github\.io\/blog");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/gkteco/blog/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
